@@ -1,4 +1,4 @@
-let productosCarrito = [];
+let productosCarro = [];
 let usuario = null;
 let comprobar = true;
 let contenedor = document.getElementById('pedidos');
@@ -24,9 +24,9 @@ function cargarDatos() {
 
         let usuarioEncontrado = usuarios.find(u => u.correo === usuario.correo);
         if (usuarioEncontrado && Array.isArray(usuarioEncontrado.pedidos)) {
-            productosCarrito = usuarioEncontrado.pedidos;
+            productosCarro = usuarioEncontrado.pedidos;
         } else {
-            productosCarrito = [];
+            productosCarro = [];
         }
     } else {
         comprobar = false;
@@ -37,7 +37,7 @@ function mostrarPedidos() {
     const pedidosDiv = document.getElementById('pedidos');
     pedidosDiv.innerHTML = '';
 
-    if ((productosCarrito.length === 0) && comprobar) {
+    if ((productosCarro.length === 0) && comprobar) {
         pedidosDiv.innerHTML = '<h3>No tienes pedidos realizados</h3>';
         return;
     }
@@ -46,7 +46,7 @@ function mostrarPedidos() {
         pedidosDiv.innerHTML = '<h3>Parece que no has iniciado sesion :(, inicia sesión para ver tus pedidos</h3>';
         return;
     }
-    productosCarrito.forEach((pedido, index) => {
+    productosCarro.forEach((pedido, index) => {
         const pedidoContainer = document.createElement('div');
         pedidoContainer.className = 'card shadow-sm mb-4';
         pedidoContainer.style.borderRadius = '12px';

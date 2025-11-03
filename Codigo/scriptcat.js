@@ -57,8 +57,8 @@ function mostrarCatalogo() {
                         <div class="mt-auto">
                             <p class="text-primary fw-bold fs-5 mb-2">$${producto.precio}</p>
                             <p class="text-muted mb-2">Stock: ${producto.stock}</p>
-                            <button class="btn btn-primary w-100" onclick="agregarAlCarrito(${producto.id})">
-                                <i class="fas fa-cart-plus"></i> Agregar al carrito
+                            <button class="btn btn-primary w-100" onclick="agregarAlCarro(${producto.id})">
+                                <i class="fas fa-cart-plus"></i> Agregar al carro
                             </button>
                         </div>
                     </div>
@@ -72,9 +72,9 @@ function mostrarCatalogo() {
     }
 }
 
-function agregarAlCarrito(id) {
+function agregarAlCarro(id) {
     if (!usuario) {
-        Swal.fire('Advertencia', 'Debes iniciar sesión para agregar productos al carrito', 'warning');
+        Swal.fire('Advertencia', 'Debes iniciar sesión para agregar productos al carro', 'warning');
         return;
     }
     
@@ -88,14 +88,14 @@ function agregarAlCarrito(id) {
     let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
     let indiceUsuario = usuarios.findIndex(u => u.correo === usuario.correo);
     
-    if (!usuarios[indiceUsuario].carrito) {
-        usuarios[indiceUsuario].carrito = [];
+    if (!usuarios[indiceUsuario].carro) {
+        usuarios[indiceUsuario].carro = [];
     }
     
-    usuarios[indiceUsuario].carrito.push(producto);
+    usuarios[indiceUsuario].carro.push(producto);
     localStorage.setItem('usuarios', JSON.stringify(usuarios));
     
-    Swal.fire('Agregado', 'Producto agregado al carrito', 'success');
+    Swal.fire('Agregado', 'Producto agregado al carro', 'success');
 }
 
 document.getElementById('btnLogin').addEventListener('click', function () {
@@ -158,7 +158,7 @@ document.getElementById('formRegistro').addEventListener('submit', function (e) 
         correo: correo,
         tel: tel,
         pass: pass,
-        carrito: [],
+        carro: [],
         pedidos: []
     });
 

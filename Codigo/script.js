@@ -1,7 +1,7 @@
 let productos = [];
 let editando = null;
 let usuario = null;
-let carritoUsuario = [];
+let carroUsuario = [];
 //Esas variables son las globales
 //localStorage.clear();
 
@@ -52,7 +52,7 @@ function mostrar() {
                     <div class="d-flex gap-2">
                         <button class="btn btn-warning btn-sm flex-fill" onclick="editar(${p.id})">Editar</button>
                         <button class="btn btn-danger btn-sm flex-fill" onclick="eliminar(${p.id})">Eliminar</button>
-                        <button class="btn btn btn-primary btn-sm flex-fill" onclick="carrito(${p.id})">Agregar al carrito</button>
+                        <button class="btn btn btn-primary btn-sm flex-fill" onclick="carro(${p.id})">Agregar al carro</button>
                     </div>
                 </div>
             </div>
@@ -215,9 +215,9 @@ function eliminar(id) {
     });
 }
 
-function carrito(id) {
+function carro(id) {
     if(!usuario){
-        Swal.fire('Error', 'Debes iniciar sesion para agregar productos al carrito', 'error');
+        Swal.fire('Error', 'Debes iniciar sesion para agregar productos al carro', 'error');
         return;
     }
     let prod = productos.find(p => p.id === id);
@@ -227,21 +227,21 @@ function carrito(id) {
         Swal.fire('Agotado', 'No hay stock disponible de este producto', 'error');
         return;
     }
-    //aqui busco al usuario para asignarle el producto al carrito de este
+    //aqui busco al usuario para asignarle el producto al carro de este
     let usuarios = JSON.parse(window.localStorage.getItem('usuarios')) || [];
     let indiceUsuario = usuarios.findIndex(u => u.correo === usuario.correo);
 
 
 
-    let carritoActual = usuarios[indiceUsuario].carrito || [];
+    let carroActual = usuarios[indiceUsuario].carro || [];
 
-    //let carritoActual = JSON.parse(localStorage.getItem('carrito')) || [];
-    //console.log(carritoActual)s
+    //let carroActual = JSON.parse(localStorage.getItem('carro')) || [];
+    //console.log(carroActual)s
 
-    carritoActual.push(prod);
-    usuarios[indiceUsuario].carrito = carritoActual;
+    carroActual.push(prod);
+    usuarios[indiceUsuario].carro = carroActual;
     window.localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    Swal.fire('Añadido al carrito', 'Se agrego al carrito correctamente :D', 'success');
+    Swal.fire('Añadido al carro', 'Se agrego al carro correctamente', 'success');
 }
 
 /*si hay un usuario activo te pregunta si quieres cerrar la cuenta activa, y si no hay usuario activo
@@ -291,7 +291,7 @@ document.getElementById('formRegistro').addEventListener('submit', function (e) 
     let tel = document.getElementById('tel').value;
     let pass = document.getElementById('passReg').value;
     let passConf = document.getElementById('passConf').value;
-    let carrito;
+    let carro;
     let pedidos;
 
     if (pass !== passConf) {
@@ -311,7 +311,7 @@ document.getElementById('formRegistro').addEventListener('submit', function (e) 
         correo: correo,
         tel: tel,
         pass: pass,
-        carrito: [],
+        carros: [],
         pedidos: []
     });
 

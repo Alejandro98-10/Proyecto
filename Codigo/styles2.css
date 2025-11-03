@@ -75,7 +75,7 @@ body {
     padding: 10px;
 }
 
-#loaderCarrito {
+#loaderCarro {
   position: fixed;
   top: 0;
   left: 0;
@@ -88,7 +88,7 @@ body {
   z-index: 9999;
 }
 
-#loaderCarrito img {
+#loaderCarro img {
   width: 150px;
   animation: pulse 5s infinite;
 }

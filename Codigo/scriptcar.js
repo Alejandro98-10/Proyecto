@@ -1,14 +1,14 @@
-let productosCarrito = [];
+let productosCarro = [];
 let usuario = null;
 let cupones = ["ENVIOGRATIS123", "TEST123", "DESCUENTO2025"];
-let contenedor = document.getElementById('carrito');
+let contenedor = document.getElementById('carro');
 const contraBorrar = "password123";
 let comprobar = true;
 
 //Esas variables son las globales
 
 window.addEventListener('load', function () {
-    const loader = document.getElementById('loaderCarrito');
+    const loader = document.getElementById('loaderCarro');
     loader.style.display = "none";
     contenedor.style.display = "block";
 });
@@ -16,8 +16,8 @@ window.addEventListener('load', function () {
 //Funcion para que cada que cargue la pagina carguen los productos y si hay un usuario activo pues solo muestra un hola y el nombre de este
 function cargarDatos() {
     let usuarios = JSON.parse(window.localStorage.getItem('usuarios')) || [];
-    /*if (carrito) {
-        productosCarrito = carrito;
+    /*if (carro) {
+        productosCarro = carro;
     }*/
     let user = JSON.parse(window.localStorage.getItem('usuario'));
     if (user) {
@@ -27,8 +27,8 @@ function cargarDatos() {
             saludo.style.display = 'inline';
             saludo.textContent = 'Hola, ' + usuario.nom;
             comprobar = true;
-            let carritoUsuario = usuarios.find(u => u.correo === usuario.correo).carrito || [];
-            productosCarrito = carritoUsuario;
+            let carroUsuario = usuarios.find(u => u.correo === usuario.correo).carro || [];
+            productosCarro = carroUsuario;
         }
     } else {
         contenedor.innerHTML = '<h3>Parece que no has iniciado sesion, inicia sesion para empezar a comprar</h3>'
@@ -39,7 +39,7 @@ function cargarDatos() {
 function guardar() {
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
     let indice = usuarios.findIndex(u => u.correo === usuario.correo);
-    usuarios[indice].carrito = productosCarrito;
+    usuarios[indice].carro = productosCarro;
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
 }
@@ -48,16 +48,16 @@ function mostrar() {
     contenedor.innerHTML = '';
     let sumaTotal = 0;
 
-    if (productosCarrito.length === 0) {
-        contenedor.innerHTML = '<h3>Tu carrito está vacío</h3>';
+    if (productosCarro.length === 0) {
+        contenedor.innerHTML = '<h3>Tu carro está vacío</h3>';
         total.innerHTML = '';
         return;
     }
 
-    productosCarrito.forEach(function (p) {
+    productosCarro.forEach(function (p) {
         sumaTotal += parseFloat(p.precio);
-        let cantidad = productosCarrito.filter(prod => prod.id === p.id).length;
-        if (productosCarrito.indexOf(p) !== productosCarrito.findIndex(prod => prod.id === p.id)) {
+        let cantidad = productosCarro.filter(prod => prod.id === p.id).length;
+        if (productosCarro.indexOf(p) !== productosCarro.findIndex(prod => prod.id === p.id)) {
             return;
             //console.log("No entre");
         }
@@ -92,7 +92,7 @@ function mostrar() {
         `;
         contenedor.appendChild(col);
     });
-    //calcula el total del carrito
+    //calcula el total del carro
     let subtotal = (sumaTotal / 1.16).toFixed(2);
     let iva = (sumaTotal - subtotal).toFixed(2);
     let totalon = (parseFloat(sumaTotal) + 59.99).toFixed(2);
@@ -110,26 +110,26 @@ function mostrar() {
 }
 
 function hacerPago() {
-    let sumaTotal = productosCarrito.reduce((acc, p) => acc + parseFloat(p.precio), 0);
+    let sumaTotal = productosCarro.reduce((acc, p) => acc + parseFloat(p.precio), 0);
     let subtotal = (sumaTotal / 1.16).toFixed(2);
     let iva = (sumaTotal - subtotal).toFixed(2);
     let totalon = (parseFloat(sumaTotal) + 59.99).toFixed(2);
 
     Swal.fire('Pago realizado', 'Gracias por tu compra', 'success').then(() => {
         let productosDos = JSON.parse(localStorage.getItem("productos")) || [];
-        productosCarrito.forEach(productoCarrito => {
-            let productoDos = productosDos.find(p => p.id === productoCarrito.id);
+        productosCarro.forEach(productoCarro => {
+            let productoDos = productosDos.find(p => p.id === productoCarro.id);
             if (productoDos) {
                 productoDos.stock--;
             }
         });
         localStorage.setItem("productos", JSON.stringify(productosDos));
-        guardarDatos(productosCarrito, totalon);
+        guardarDatos(productosCarro, totalon);
         let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
         let indice = usuarios.findIndex(u => u.correo === usuario.correo);
 
         const pedidoNuevo = {
-            productos: productosCarrito,
+            productos: productosCarro,
             fecha: new Date().toLocaleDateString(),
             total: totalon
         };
@@ -137,8 +137,8 @@ function hacerPago() {
             usuarios[indice].pedidos = [];
         }
         usuarios[indice].pedidos.push(pedidoNuevo);
-        productosCarrito = [];
-        usuarios[indice].carrito = [];
+        productosCarro = [];
+        usuarios[indice].carro = [];
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
         localStorage.setItem("usuario", JSON.stringify(usuario));
 
@@ -189,7 +189,7 @@ function aplicarCupon() {
 
 function sumarCantidad(id, cantidad) {
 
-    let prod = productosCarrito.find(p => p.id === id);
+    let prod = productosCarro.find(p => p.id === id);
     console.log(prod.id)
     console.log(prod.stock)
     if (prod.stock <= 0) {
@@ -201,7 +201,7 @@ function sumarCantidad(id, cantidad) {
         return;
     }
     if (prod) {
-        productosCarrito.push(prod);
+        productosCarro.push(prod);
         guardar();
         mostrar();
         location.reload();
@@ -214,9 +214,9 @@ function restarCantidad(id, cantidad) {
         eliminar(id);
         return;
     }
-    let ide = productosCarrito.findIndex(p => p.id === id);
+    let ide = productosCarro.findIndex(p => p.id === id);
     if (ide !== -1) {
-        productosCarrito.splice(ide, 1);
+        productosCarro.splice(ide, 1);
         guardar();
         mostrar();
     }
@@ -227,7 +227,7 @@ function restarCantidad(id, cantidad) {
 modifique*/
 function editar(id) {
     editando = id;
-    let prod = productosCarrito.find(p => p.id === id);
+    let prod = productosCarro.find(p => p.id === id);
     document.getElementById('tituloModal').textContent = 'Editar Producto';
     document.getElementById('nomProdus').value = prod.nom;
     document.getElementById('precio').value = prod.precio;
@@ -258,7 +258,7 @@ function eliminar(id) {
                 Swal.fire('Error', 'Contraseña incorrecta', 'error');
                 return;
             }
-            productosCarrito = productosCarrito.filter(p => p.id !== id);
+            productosCarro = productosCarro.filter(p => p.id !== id);
             guardar();
             mostrar();
             Swal.fire('Eliminado', 'El producto ha sido eliminado', 'success');
