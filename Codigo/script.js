@@ -1,348 +1,307 @@
-let productos = [];
-let editando = null;
-let usuario = null;
-let carroUsuario = [];
-//Esas variables son las globales
-//localStorage.clear();
+let listaArticulos = [];
+let idEditando = null;
+let sesionActiva = null;
 
-window.addEventListener('load', function() {
-    const loader = document.getElementById('loader');
-    loader.style.display = "none";
-});
-
-//Funcion para que cada que cargue la pagina carguen los productos y si hay un usuario activo pues solo muestra un hola y el nombre de este
-function cargarDatos() {
-    let prod = JSON.parse(window.localStorage.getItem('productos'));
-    if (prod) {
-        productos = prod;
+function inicializarDatos() {
+    const articulosGuardados = localStorage.getItem('articulos');
+    if (articulosGuardados) {
+        listaArticulos = JSON.parse(articulosGuardados);
     }
-    let user = JSON.parse(window.localStorage.getItem('usuario'));
-    if (user) {
-        usuario = user;
-        let saludo = document.getElementById('saludo');
-        if (saludo) {
-            saludo.style.display = 'inline';
-            saludo.textContent = 'Hola, ' + usuario.nom;
+    
+    const datosUsuario = localStorage.getItem('sesionActual');
+    if (datosUsuario) {
+        sesionActiva = JSON.parse(datosUsuario);
+        const elementoInfo = document.getElementById('infoSesion');
+        if (elementoInfo) {
+            elementoInfo.textContent = 'Hola, ' + sesionActiva.nombre;
         }
     }
 }
 
-//Para guardar productos
-function guardar() {
-    window.localStorage.setItem('productos', JSON.stringify(productos));
+function almacenarArticulos() {
+    localStorage.setItem('articulos', JSON.stringify(listaArticulos));
 }
 
-//La estructura de los card para mostrarlos en cada producto
-function mostrar() {
-    let contenedor = document.getElementById('productos');
+function renderizarArticulos() {
+    const contenedor = document.getElementById('listaProductos');
     contenedor.innerHTML = '';
 
-    productos.forEach(function (p) {
-        let col = document.createElement('div');
-        col.className = 'col-md-3 mb-4';
-        col.innerHTML = `
+    listaArticulos.forEach(function (articulo) {
+        const columna = document.createElement('div');
+        columna.className = 'col-md-4 mb-4';
+        columna.innerHTML = `
             <div class="card h-100">
-                <img src="${p.img}" class="card-img-top" style="height:200px; object-fit:cover;">
+                <img src="${articulo.foto}" class="card-img-top">
                 <div class="card-body">
-                    <h5 class="card-title">${p.nom}</h5>
-                    <p class="card-text text-muted">${p.desc}</p>
-                    <p class="card-text text-muted">Stock: ${p.stock}</p>
-                    <p class="card-text"><strong>Categoria:</strong> ${p.cat}</p>
-                    <h4 class="text-primary">$${p.precio}</h4>
+                    <h5 class="card-title">${articulo.titulo}</h5>
+                    <p class="card-text text-muted">${articulo.info}</p>
+                    <p class="card-text text-muted">Disponible: ${articulo.cantidad}</p>
+                    <p class="card-text"><strong>Seccion:</strong> ${articulo.tipo}</p>
+                    <h4>$${articulo.valor}</h4>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-warning btn-sm flex-fill" onclick="editar(${p.id})">Editar</button>
-                        <button class="btn btn-danger btn-sm flex-fill" onclick="eliminar(${p.id})">Eliminar</button>
-                        <button class="btn btn btn-primary btn-sm flex-fill" onclick="carro(${p.id})">Agregar al carro</button>
+                        <button class="btn btn-secondary btn-sm flex-fill" onclick="modificarArticulo(${articulo.codigo})">Editar</button>
+                        <button class="btn btn-danger btn-sm flex-fill" onclick="borrarArticulo(${articulo.codigo})">Eliminar</button>
+                        <button class="btn btn-dark btn-sm flex-fill" onclick="agregarAlCarro(${articulo.codigo})">Carrito</button>
                     </div>
                 </div>
             </div>
         `;
-        contenedor.appendChild(col);
+        contenedor.appendChild(columna);
     });
 }
 
-//Abre el modal de agregar productos al dar click al boton agregar
-document.getElementById('btnAgregar').addEventListener('click', function () {
-    if (!usuario) {
-        Swal.fire('Error', 'Debes iniciar sesion para agregar productos', 'error');
+document.getElementById('btnNuevoProducto').addEventListener('click', function () {
+    if (!sesionActiva) {
+        Swal.fire('Atencion', 'Debes iniciar sesion para agregar productos', 'warning');
         return;
     }
-    editando = null;
-
-    document.getElementById('tituloModal').textContent = 'Agregar Producto';
-    document.getElementById('formProducto').reset();
-    document.getElementById('preview').style.display = 'none';
-    let modal = new bootstrap.Modal(document.getElementById('modalProducto'));
-    modal.show();
+    idEditando = null;
+    document.getElementById('tituloFormulario').textContent = 'Agregar Producto';
+    document.getElementById('formularioArticulo').reset();
+    document.getElementById('contenedorVista').style.display = 'none';
+    const ventana = new bootstrap.Modal(document.getElementById('modalArticulo'));
+    ventana.show();
 });
 
-//se encarga de guardar la imagen para mostrarla en base64
-document.getElementById('img').addEventListener('change', function (e) {
-    let file = e.target.files[0];
-    if (file) {
-        let reader = new FileReader();
-        reader.onload = function (evento) {
-            document.getElementById('imgPreview').src = evento.target.result;
-            document.getElementById('preview').style.display = 'block';
+document.getElementById('imagenArticulo').addEventListener('change', function (evento) {
+    const archivo = evento.target.files[0];
+    if (archivo) {
+        const lector = new FileReader();
+        lector.onload = function (e) {
+            document.getElementById('vistaPrevia').src = e.target.result;
+            document.getElementById('contenedorVista').style.display = 'block';
         };
-        reader.readAsDataURL(file);
+        lector.readAsDataURL(archivo);
     }
 });
 
-/*Cuando presionas submit en el de agregar productos guarda los datos en variables para despues ir pasandolas a
-un vector si cuentan con las validaciones y solo si el usuario no esta editando, esto se hace con una variable
-la cual verificara si el usuario se encuentra editando o esta creando un nuevo articulo, esta variable se encuentra
-en la funcion editar y tiene como parametro la id del producto para asi poder buscarlo por ese id para poder
-modificar directamente los datos de este.*/
-document.getElementById('formProducto').addEventListener('submit', function (e) {
-    e.preventDefault();
+document.getElementById('formularioArticulo').addEventListener('submit', function (evento) {
+    evento.preventDefault();
 
-    let nom = document.getElementById('nomProdus').value;
-    let precio = document.getElementById('precio').value;
-    let stock = document.getElementById('stock').value;
-    let desc = document.getElementById('desc').value;
-    let cat = document.getElementById('categoria').value;
-    let img = document.getElementById('img').files[0];
+    const titulo = document.getElementById('nombreArticulo').value;
+    const valor = document.getElementById('costoArticulo').value;
+    const cantidad = document.getElementById('existencias').value;
+    const info = document.getElementById('detallesArticulo').value;
+    const tipo = document.getElementById('tipoArticulo').value;
+    const archivo = document.getElementById('imagenArticulo').files[0];
 
-    if (editando) {
-        let indice = productos.findIndex(p => p.id === editando);
-        if (img) {
-            if (precio<0 || stock<0){
-            Swal.fire('Error', 'No puede haber valores negativos', 'error');
-            return;
-        }
-            let leer = new FileReader();
-            leer.onload = function (evento) {
-                productos[indice].nom = nom;
-                productos[indice].precio = precio;
-                productos[indice].stock = stock;
-                productos[indice].desc = desc;
-                productos[indice].cat = cat;
-                productos[indice].img = evento.target.result;
-                guardar();
-                mostrar();
-                bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
-                Swal.fire('Listo!!!', 'Producto actualizado', 'success');
+    if (idEditando) {
+        const posicion = listaArticulos.findIndex(art => art.codigo === idEditando);
+        if (archivo) {
+            if (valor < 0 || cantidad < 0) {
+                Swal.fire('Error', 'Los valores no pueden ser negativos', 'error');
+                return;
+            }
+            const lector = new FileReader();
+            lector.onload = function (e) {
+                listaArticulos[posicion].titulo = titulo;
+                listaArticulos[posicion].valor = valor;
+                listaArticulos[posicion].cantidad = cantidad;
+                listaArticulos[posicion].info = info;
+                listaArticulos[posicion].tipo = tipo;
+                listaArticulos[posicion].foto = e.target.result;
+                almacenarArticulos();
+                renderizarArticulos();
+                bootstrap.Modal.getInstance(document.getElementById('modalArticulo')).hide();
+                Swal.fire('Completado', 'Articulo actualizado', 'success');
             };
-            leer.readAsDataURL(img);
-            //no es necesario poner una imagen 
+            lector.readAsDataURL(archivo);
         } else {
-            if (precio<0 || stock<0){
-            Swal.fire('Error', 'No puede haber valores negativos', 'error');
-            return;
-        }
-        if (precio==0){
-            Swal.fire('Error', 'El precio no puede ser 0', 'error');
-            return;
-        }
-            productos[indice].nom = nom;
-            productos[indice].precio = precio;
-            productos[indice].stock = stock;
-            productos[indice].desc = desc;
-            productos[indice].cat = cat;
-            guardar();
-            mostrar();
-            bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
-            Swal.fire('Listo!', 'Producto actualizado', 'success');
+            if (valor < 0 || cantidad < 0) {
+                Swal.fire('Error', 'Los valores no pueden ser negativos', 'error');
+                return;
+            }
+            if (valor == 0) {
+                Swal.fire('Error', 'El precio debe ser mayor a cero', 'error');
+                return;
+            }
+            listaArticulos[posicion].titulo = titulo;
+            listaArticulos[posicion].valor = valor;
+            listaArticulos[posicion].cantidad = cantidad;
+            listaArticulos[posicion].info = info;
+            listaArticulos[posicion].tipo = tipo;
+            almacenarArticulos();
+            renderizarArticulos();
+            bootstrap.Modal.getInstance(document.getElementById('modalArticulo')).hide();
+            Swal.fire('Completado', 'Articulo actualizado', 'success');
         }
     } else {
-        if (!img) {
-            Swal.fire('Error', 'Debes subir una imagen', 'error');
+        if (!archivo) {
+            Swal.fire('Error', 'Debes seleccionar una imagen', 'error');
             return;
         }
-        if (precio<0 || stock<0){
-            Swal.fire('Error', 'No puede haber valores negativos', 'error');
+        if (valor < 0 || cantidad < 0) {
+            Swal.fire('Error', 'Los valores no pueden ser negativos', 'error');
             return;
         }
-        if (precio==0){
-            Swal.fire('Error', 'El precio no puede ser 0', 'error');
+        if (valor == 0) {
+            Swal.fire('Error', 'El precio debe ser mayor a cero', 'error');
             return;
         }
-        let reader = new FileReader();
-        reader.onload = function (evento) {
-            let prod = {
-                id: Date.now(),
-                nom: nom,
-                precio: precio,
-                stock: stock,
-                desc: desc,
-                cat: cat,
-                img: evento.target.result
+        const lector = new FileReader();
+        lector.onload = function (e) {
+            const nuevoArticulo = {
+                codigo: Date.now(),
+                titulo: titulo,
+                valor: valor,
+                cantidad: cantidad,
+                info: info,
+                tipo: tipo,
+                foto: e.target.result
             };
-            productos.push(prod);
-            guardar();
-            mostrar();
-            bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
-            Swal.fire('Listo!', 'Producto agregado', 'success');
+            listaArticulos.push(nuevoArticulo);
+            almacenarArticulos();
+            renderizarArticulos();
+            bootstrap.Modal.getInstance(document.getElementById('modalArticulo')).hide();
+            Swal.fire('Completado', 'Articulo agregado correctamente', 'success');
         };
-        reader.readAsDataURL(img);
+        lector.readAsDataURL(archivo);
     }
 });
 
-/*Esta es mi funcion de editar la cual agarrara los valores que ya tiene para mostrarlos y ya que de ahi
-modifique*/
-function editar(id) {
-    editando = id;
-    let prod = productos.find(p => p.id === id);
-    document.getElementById('tituloModal').textContent = 'Editar Producto';
-    document.getElementById('nomProdus').value = prod.nom;
-    document.getElementById('precio').value = prod.precio;
-    document.getElementById('stock').value = prod.stock;
-    document.getElementById('desc').value = prod.desc;
-    document.getElementById('imgPreview').src = prod.img;
-    document.getElementById('preview').style.display = 'block';
-    let modal = new bootstrap.Modal(document.getElementById('modalProducto'));
-    modal.show();
+function modificarArticulo(codigo) {
+    idEditando = codigo;
+    const articulo = listaArticulos.find(art => art.codigo === codigo);
+    document.getElementById('tituloFormulario').textContent = 'Editar Producto';
+    document.getElementById('nombreArticulo').value = articulo.titulo;
+    document.getElementById('costoArticulo').value = articulo.valor;
+    document.getElementById('existencias').value = articulo.cantidad;
+    document.getElementById('detallesArticulo').value = articulo.info;
+    document.getElementById('tipoArticulo').value = articulo.tipo;
+    document.getElementById('vistaPrevia').src = articulo.foto;
+    document.getElementById('contenedorVista').style.display = 'block';
+    const ventana = new bootstrap.Modal(document.getElementById('modalArticulo'));
+    ventana.show();
 }
 
-/*Cada uno de los card contiene el id de cada producto, aqui en esta parte se hace referencia a estos
-para poder encontrarlo y poder eliminar ese id en especifico*/
-function eliminar(id) {
+function borrarArticulo(codigo) {
     Swal.fire({
-        title: 'Estás seguro?',
-        text: 'No podras recuperar este producto',
+        title: 'Confirmar eliminacion',
+        text: 'Este articulo sera eliminado permanentemente',
         icon: 'warning',
         showCancelButton: true,
-        confirmButtonText: 'Si, eliminar',
+        confirmButtonText: 'Eliminar',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            productos = productos.filter(p => p.id !== id);
-            guardar();
-            mostrar();
-            Swal.fire('Eliminado', 'El producto ha sido eliminado', 'success');
+    }).then((resultado) => {
+        if (resultado.isConfirmed) {
+            listaArticulos = listaArticulos.filter(art => art.codigo !== codigo);
+            almacenarArticulos();
+            renderizarArticulos();
+            Swal.fire('Eliminado', 'Articulo eliminado correctamente', 'success');
         }
     });
 }
 
-function carro(id) {
-    if(!usuario){
-        Swal.fire('Error', 'Debes iniciar sesion para agregar productos al carro', 'error');
+function agregarAlCarro(codigo) {
+    if (!sesionActiva) {
+        Swal.fire('Atencion', 'Debes iniciar sesion para agregar al carrito', 'warning');
         return;
     }
-    let prod = productos.find(p => p.id === id);
-    //console.log(prod.id)
-    //console.log(prod.stock)
-    if (prod.stock<=0){
-        Swal.fire('Agotado', 'No hay stock disponible de este producto', 'error');
+    const articulo = listaArticulos.find(art => art.codigo === codigo);
+    if (articulo.cantidad <= 0) {
+        Swal.fire('Sin existencias', 'Este articulo no esta disponible', 'error');
         return;
     }
-    //aqui busco al usuario para asignarle el producto al carro de este
-    let usuarios = JSON.parse(window.localStorage.getItem('usuarios')) || [];
-    let indiceUsuario = usuarios.findIndex(u => u.correo === usuario.correo);
-
-
-
-    let carroActual = usuarios[indiceUsuario].carro || [];
-
-    //let carroActual = JSON.parse(localStorage.getItem('carro')) || [];
-    //console.log(carroActual)s
-
-    carroActual.push(prod);
-    usuarios[indiceUsuario].carro = carroActual;
-    window.localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    Swal.fire('Añadido al carro', 'Se agrego al carro correctamente', 'success');
+    const cuentas = JSON.parse(localStorage.getItem('cuentasUsuarios')) || [];
+    const indiceCuenta = cuentas.findIndex(c => c.email === sesionActiva.email);
+    const carritoActual = cuentas[indiceCuenta].carro || [];
+    carritoActual.push(articulo);
+    cuentas[indiceCuenta].carro = carritoActual;
+    localStorage.setItem('cuentasUsuarios', JSON.stringify(cuentas));
+    Swal.fire('Agregado', 'Articulo agregado al carrito', 'success');
 }
 
-/*si hay un usuario activo te pregunta si quieres cerrar la cuenta activa, y si no hay usuario activo
-te abre el modal para que te registres*/
-document.getElementById('btnLogin').addEventListener('click', function () {
-    if (usuario) {
+document.getElementById('btnAcceso').addEventListener('click', function () {
+    if (sesionActiva) {
         Swal.fire({
-            title: 'Cerrar sesion?',
+            title: 'Cerrar sesion',
+            text: 'Deseas cerrar tu sesion actual?',
             icon: 'question',
             showCancelButton: true,
             confirmButtonText: 'Si',
             cancelButtonText: 'No'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.localStorage.removeItem('usuario');
+        }).then((resultado) => {
+            if (resultado.isConfirmed) {
+                localStorage.removeItem('sesionActual');
                 location.reload();
             }
         });
     } else {
-        let modal = new bootstrap.Modal(document.getElementById('modalLogin'));
-        modal.show();
+        const ventana = new bootstrap.Modal(document.getElementById('modalAcceso'));
+        ventana.show();
     }
 });
 
-/*solo es para que se cierre el login y se abra el registro*/
-document.getElementById('abrirRegistro').addEventListener('click', function (e) {
-    e.preventDefault();
-    bootstrap.Modal.getInstance(document.getElementById('modalLogin')).hide();
-    let modal = new bootstrap.Modal(document.getElementById('modalRegistro'));
-    modal.show();
+document.getElementById('irRegistro').addEventListener('click', function (evento) {
+    evento.preventDefault();
+    bootstrap.Modal.getInstance(document.getElementById('modalAcceso')).hide();
+    const ventana = new bootstrap.Modal(document.getElementById('modalNuevaCuenta'));
+    ventana.show();
 });
 
-/*Para que se abra el login y se cierre el registro*/
-document.getElementById('abrirLogin').addEventListener('click', function (e) {
-    e.preventDefault();
-    bootstrap.Modal.getInstance(document.getElementById('modalRegistro')).hide();
-    let modal = new bootstrap.Modal(document.getElementById('modalLogin'));
-    modal.show();
+document.getElementById('volverAcceso').addEventListener('click', function (evento) {
+    evento.preventDefault();
+    bootstrap.Modal.getInstance(document.getElementById('modalNuevaCuenta')).hide();
+    const ventana = new bootstrap.Modal(document.getElementById('modalAcceso'));
+    ventana.show();
 });
 
-/*Formulario de registro en donde se registran los usuarios y se guardan en el localstorage*/
-document.getElementById('formRegistro').addEventListener('submit', function (e) {
-    e.preventDefault();
+document.getElementById('formularioRegistro').addEventListener('submit', function (evento) {
+    evento.preventDefault();
 
-    let nom = document.getElementById('nombre').value;
-    let correo = document.getElementById('correoReg').value;
-    let tel = document.getElementById('tel').value;
-    let pass = document.getElementById('passReg').value;
-    let passConf = document.getElementById('passConf').value;
-    let carro;
-    let pedidos;
+    const nombre = document.getElementById('nombreRegistro').value;
+    const email = document.getElementById('emailRegistro').value;
+    const telefono = document.getElementById('telefonoRegistro').value;
+    const clave = document.getElementById('claveRegistro').value;
+    const confirmar = document.getElementById('confirmarClave').value;
 
-    if (pass !== passConf) {
-        Swal.fire('Error', 'Las contraseñas no coinciden', 'error');
+    if (clave !== confirmar) {
+        Swal.fire('Error', 'Las contraseñas no son iguales', 'error');
         return;
     }
 
-    let usuarios = JSON.parse(window.localStorage.getItem('usuarios')) || [];
+    const cuentas = JSON.parse(localStorage.getItem('cuentasUsuarios')) || [];
 
-    if (usuarios.find(u => u.correo === correo)) {
-        Swal.fire('Error', 'Ya existe una cuenta con este correo', 'error');
+    if (cuentas.find(c => c.email === email)) {
+        Swal.fire('Error', 'Este correo ya esta registrado', 'error');
         return;
     }
 
-    usuarios.push({
-        nom: nom,
-        correo: correo,
-        tel: tel,
-        pass: pass,
-        carros: [],
-        pedidos: []
+    cuentas.push({
+        nombre: nombre,
+        email: email,
+        telefono: telefono,
+        clave: clave,
+        carro: [],
+        compras: []
     });
 
-    window.localStorage.setItem('usuarios', JSON.stringify(usuarios));
-    bootstrap.Modal.getInstance(document.getElementById('modalRegistro')).hide();
-    Swal.fire('Exito', 'Cuenta creada correctamente', 'success');
+    localStorage.setItem('cuentasUsuarios', JSON.stringify(cuentas));
+    bootstrap.Modal.getInstance(document.getElementById('modalNuevaCuenta')).hide();
+    Swal.fire('Registro exitoso', 'Tu cuenta ha sido creada', 'success');
 });
 
-/*EL evento submit del login que busca al usuario y hace validaciones*/
-document.getElementById('formLogin').addEventListener('submit', function (e) {
-    e.preventDefault();
-    let correo = document.getElementById('correo').value;
-    let pass = document.getElementById('pass').value;
-    let usuarios = JSON.parse(window.localStorage.getItem('usuarios')) || [];
-    let user = usuarios.find(u => u.correo === correo && u.pass === pass);
+document.getElementById('formularioAcceso').addEventListener('submit', function (evento) {
+    evento.preventDefault();
+    const email = document.getElementById('emailAcceso').value;
+    const clave = document.getElementById('claveAcceso').value;
+    const cuentas = JSON.parse(localStorage.getItem('cuentasUsuarios')) || [];
+    const cuenta = cuentas.find(c => c.email === email && c.clave === clave);
 
-    if (!user) {
-        Swal.fire('Error', 'Correo o contraseña incorrectos', 'error');
+    if (!cuenta) {
+        Swal.fire('Error', 'Credenciales incorrectas', 'error');
         return;
     }
-    window.localStorage.setItem('usuario', JSON.stringify({
-        nom: user.nom,
-        correo: user.correo,
-        tel: user.tel
+    localStorage.setItem('sesionActual', JSON.stringify({
+        nombre: cuenta.nombre,
+        email: cuenta.email,
+        telefono: cuenta.telefono
     }));
-    bootstrap.Modal.getInstance(document.getElementById('modalLogin')).hide();
-    Swal.fire('Bienvenido!!!', 'Has iniciado sesion', 'success').then(() => {
+    bootstrap.Modal.getInstance(document.getElementById('modalAcceso')).hide();
+    Swal.fire('Bienvenido', 'Sesion iniciada correctamente', 'success').then(() => {
         location.reload();
     });
 });
 
-/*Funciones que repito cada vez que inicia la pagina para cargar los datos del usuario y mostrar los productos*/
-cargarDatos();
-mostrar();
+inicializarDatos();
+renderizarArticulos();

@@ -1,228 +1,164 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>polichop</title>
+    <title>Polichop</title>
     <link rel="icon" type="image/png" href="logo2.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-    <div id="contenidoPrincipal">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="index.html">
-                    <img src="logo2.png" alt="polichop" height="45">
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button> 
-                <div class="collapse navbar-collapse" id="menu">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item"><a class="nav-link" href="index.html">Inicio</a></li>
-                        <li class="nav-item"><a class="nav-link" href="catalogo.html">Catalogo</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Ofertas</a></li>
-                        <li class="nav-item"><a class="nav-link" href="pedidos.html">Mis pedidos</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">Contacto</a></li>
-                        <li class="nav-item"><a class="nav-link" href="graficos.html">Estadisticas</a></li>
-                    </ul>
-                    <form class="d-flex me-3" style="max-width:400px; width:100%;">
-                        <input class="form-control" type="search" placeholder="Buscar producto..." id="buscar">
-                    </form>
-                    <div class="d-flex gap-3 align-items-center">
-                        <a href="#" class="btn btn-link text-dark"><i class="far fa-heart"></i></a>
-                        <a href="carro.html" class="btn btn-link text-dark"><i class="fas fa-shopping-cart"></i></a>
-                        <button id="btnLogin" class="btn btn-link text-dark"><i class="far fa-user"></i></button>
-                        <span id="saludo" style="display:none;" class="fw-bold"></span>
-                    </div>
-                </div>
+    <div class="contenedor-principal">
+        <aside class="menu-lateral">
+            <div class="logo-menu">
+                <h1>POLICHOP</h1>
             </div>
-        </nav>
-        <div id="loader">
-            <img src="inicioCarga.gif" alt="Cargando..." />
-        </div>
-        <div id="ContenidoPagina">
-            <!--Carrusel hecho con boostrap :D-->
-            <div id="miCarrusel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-indicators">
-                    <button type="button" data-bs-target="#miCarrusel" data-bs-slide-to="0" class="active"></button>
-                    <button type="button" data-bs-target="#miCarrusel" data-bs-slide-to="1"></button>
-                    <button type="button" data-bs-target="#miCarrusel" data-bs-slide-to="2"></button>
-                    <button type="button" data-bs-target="#miCarrusel" data-bs-slide-to="3"></button>
-                    <button type="button" data-bs-target="#miCarrusel" data-bs-slide-to="4"></button>
-                </div>
-                <div class="carousel-inner">
-                    <div class="carousel-item active">
-                        <img src="banners/carrousel-1.png" class="d-block w-100" alt="Oferta 1">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="banners/carrousel-2.png" class="d-block w-100" alt="Oferta 2">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="banners/carrousel-3.png" class="d-block w-100" alt="Oferta 3">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="banners/carrousel-4.png" class="d-block w-100" alt="Oferta 4">
-                    </div>
-                    <div class="carousel-item">
-                        <img src="banners/carrousel-5.png" class="d-block w-100" alt="Oferta 5">
-                    </div>
-                </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#miCarrusel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#miCarrusel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </button>
+            <nav class="navegacion">
+                <ul>
+                    <li><a href="index.html">INICIO</a></li>
+                    <li><a href="catalogo.html">CATALOGO</a></li>
+                    <li><a href="carrito.html">CARRITO</a></li>
+                    <li><a href="pedidos.html">PEDIDOS</a></li>
+                    <li><a href="graficos.html">ESTADISTICAS</a></li>
+                </ul>
+            </nav>
+            <div class="seccion-usuario">
+                <div class="texto-usuario" id="infoSesion">Sin sesion</div>
+                <button class="boton-sesion" id="btnAcceso">ACCEDER</button>
+            </div>
+        </aside>
+
+        <main class="contenido-principal">
+            <div class="encabezado">
+                <h2>PRODUCTOS</h2>
+                <button class="btn btn-dark" id="btnNuevoProducto">AGREGAR PRODUCTO</button>
             </div>
 
-            <!--Aqui se mostraran segun los productos-->
-            <div class="container mt-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2>Productos</h2>
-                    <button id="btnAgregar" class="btn btn-primary">Agregar producto</button>
-                </div>
-                <div class="row" id="productos">
-                </div>
-            </div>
-
-            <!--Este es el modal del login-->
-            <div class="modal fade" id="modalLogin" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Iniciar sesion</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="formLogin">
-                                <div class="mb-3">
-                                    <label class="form-label">Correo electrónico</label>
-                                    <input type="email" class="form-control" id="correo" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Contraseña</label>
-                                    <input type="password" class="form-control" id="pass" required>
-                                </div>
-                                <div class="mb-3 text-end">
-                                    <a href="#">Olvidaste tu contraseña?</a>
-                                </div>
-                                <div class="mb-3">
-                                    No tienes una cuenta? <a href="#" id="abrirRegistro">Registrate aqui</a>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!--Aqui es el de registro solo accesible a traves de el boton de registrate aqui-->
-            <div class="modal fade" id="modalRegistro" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Registrarse</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="formRegistro">
-                                <div class="mb-3">
-                                    <label class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="nombre" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Correo electronico</label>
-                                    <input type="email" class="form-control" id="correoReg" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Telefono</label>
-                                    <input type="tel" class="form-control" id="tel" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Contraseña</label>
-                                    <input type="password" class="form-control" id="passReg" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Confirmar contraseña</label>
-                                    <input type="password" class="form-control" id="passConf" required>
-                                </div>
-                                <div class="mb-3">
-                                    Ya tienes una cuenta? <a href="#" id="abrirLogin">Inicia sesion aqui</a>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Registrarse</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!--Modal para agregar productos, se abre con el boton de agregar productos-->
-            <div class="modal fade" id="modalProducto" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="tituloModal">Agregar Producto</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="formProducto">
-                                <div class="mb-3">
-                                    <label class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" id="nomProdus" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Precio</label>
-                                    <input type="number" class="form-control" id="precio" step="0.01" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Stock</label>
-                                    <input type="number" class="form-control" id="stock" required>
-                                </div>
-                                <div>
-                                    <label class="form-label">Categoria</label>
-                                    <select class="select-control" id="categoria" required>
-                                        <option value="">Seleccione una categoria</option>
-                                        <option value="Electronica">Electrónica</option>
-                                        <option value="Ropa">Ropa</option>
-                                        <option value="Hogar">Hogar</option>
-                                        <option value="Juguetes">Juguetes</option>
-                                        <option value="Deportes">Deportes</option>
-                                        <option value="Libros">Libros</option>
-                                        <option value="Belleza">Belleza</option>
-                                        <option value="Automotriz">Automotriz</option>
-                                        <option value="Salud">Salud</option>
-                                        <option value="Alimentos">Alimentos</option>  
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="desc" rows="3" required></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Imagen</label>
-                                    <input type="file" class="form-control" id="img" accept="image/*">
-                                </div>
-                                <div class="mb-3" id="preview" style="display:none;">
-                                    <img id="imgPreview" class="img-fluid rounded" style="max-height:200px;">
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Guardar</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--Y ya pos aqui es la parte donde llamo al script y para el sweetalert-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        <script src="scripts.js"></script>
+            <div class="row" id="listaProductos"></div>
+        </main>
     </div>
-</body>
 
+    <div class="modal fade" id="modalAcceso" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">INICIAR SESION</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioAcceso">
+                        <div class="mb-3">
+                            <label class="form-label">Correo electronico</label>
+                            <input type="email" class="form-control" id="emailAcceso" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="claveAcceso" required>
+                        </div>
+                        <div class="mb-3">
+                            No tienes cuenta? <a href="#" id="irRegistro">Registrate</a>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">ENTRAR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNuevaCuenta" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">REGISTRARSE</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioRegistro">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreRegistro" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo electronico</label>
+                            <input type="email" class="form-control" id="emailRegistro" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Telefono</label>
+                            <input type="tel" class="form-control" id="telefonoRegistro" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="claveRegistro" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmar contraseña</label>
+                            <input type="password" class="form-control" id="confirmarClave" required>
+                        </div>
+                        <div class="mb-3">
+                            Ya tienes cuenta? <a href="#" id="volverAcceso">Inicia sesion</a>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">REGISTRAR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalArticulo" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloFormulario">AGREGAR PRODUCTO</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioArticulo">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="nombreArticulo" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="costoArticulo" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="existencias" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Categoria</label>
+                            <select class="form-control" id="tipoArticulo" required>
+                                <option value="">Selecciona una categoria</option>
+                                <option value="Electronica">Electronica</option>
+                                <option value="Ropa">Ropa</option>
+                                <option value="Hogar">Hogar</option>
+                                <option value="Juguetes">Juguetes</option>
+                                <option value="Deportes">Deportes</option>
+                                <option value="Libros">Libros</option>
+                                <option value="Belleza">Belleza</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripcion</label>
+                            <textarea class="form-control" id="detallesArticulo" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Imagen</label>
+                            <input type="file" class="form-control" id="imagenArticulo" accept="image/*">
+                        </div>
+                        <div class="mb-3" id="contenedorVista" style="display:none;">
+                            <img id="vistaPrevia" class="img-fluid" style="max-height:200px;">
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">GUARDAR</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="script.js"></script>
+</body>
 </html>
